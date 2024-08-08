@@ -6,20 +6,18 @@ userscheme = new Schema(
             type : String,
             required : true
         },
-        uname : {
+        email : {
             type : String,
-            required : true,
-            unique : true
+            required : true
         },
         pass:{
             type : String,
-            required : true,
-            unique:true
+            required : true
         },
         date:{
             type : Date,
             default:Date.now
         }
-    },{ versionKey: false },{collection : "items"}
+    },{ versionKey: false },{collection : "users"}
 )
 module.exports = mongoose.model("User",userscheme);

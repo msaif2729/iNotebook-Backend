@@ -19,6 +19,6 @@ notescheme = new Schema(
             type : String,
             default : "General"
         }
-    },{ versionKey: false },{collection : "items"})
+    },{ versionKey: false },{collection : "notes"})
 
 module.exports = mongoose.model("Notes",notescheme);
