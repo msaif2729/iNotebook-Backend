@@ -56,7 +56,6 @@ router.post('/createuser', [
             }
         }
 
-        console.log("ID Create : "+user._id)
         //generatin the authentication token 
         const authtoken = jwt.sign(data, JWT_SIGN);
         // console.log(authtoken)
@@ -102,8 +101,6 @@ router.post('/login', [
                 id: user._id
             }
         }
-
-        console.log("ID Login: "+user._id)
         //generatin the authentication token 
         const authtoken = jwt.sign(data, JWT_SIGN);
         // console.log(authtoken)
@@ -120,7 +117,6 @@ router.post('/login', [
 
 
 router.post("/getuser",fetchuser,async (req,res)=>{
-
 
     try {
         
