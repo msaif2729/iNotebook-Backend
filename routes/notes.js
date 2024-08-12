@@ -48,6 +48,19 @@ router.get('/getall', fetchuser, async (req, res) => {
 
 });
 
+router.get('/getone/:id', fetchuser, async (req, res) => {
+    try {
+
+        const notes = await Notes.findOne({ _id:req.params.id,user: req.user.id })
+        res.send(notes)
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).send({ error: "Internal Error" })
+    }
+
+});
+
 router.delete('/deletenote/:id', fetchuser, async (req, res) => {
     try {
         const user = await Notes.findOne({_id:req.params.id,user:req.user.id})
@@ -61,7 +74,9 @@ router.delete('/deletenote/:id', fetchuser, async (req, res) => {
         {
             return res.status(401).send({error:"Note not deleted"})
         }
-        res.json("Note deleted")
+        const notes = await Notes.find({user:req.user.id})
+        // console.log(notes)
+        res.json(notes)
 
     } catch (error) {
         console.log(error)
