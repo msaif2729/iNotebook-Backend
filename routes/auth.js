@@ -24,14 +24,14 @@ router.post('/createuser', [
         //in the result we get the validated result
         const result = validationResult(req);
         if (!result.isEmpty()) {
-            return res.send({ errors: result.array() });
+            return res.send({success:false, error: result.array() });
         }
 
 
         let user = await Users.findOne({ $or: [{ email: req.body.email }, { pass: req.body.pass }] });
         if (user) {
             //Show Error mssg if the user with the details already exist
-            return res.status(400).json({ error: "Sorry a user with this email/pass is already exists" })
+            return res.status(400).json({success:false, error: "Sorry a user with this email/pass is already exists" })
         }
 
 
@@ -59,12 +59,12 @@ router.post('/createuser', [
         //generatin the authentication token 
         const authtoken = jwt.sign(data, JWT_SIGN);
         // console.log(authtoken)
-        res.json({ authtoken })
+        res.json({success:true, authtoken })
 
 
 
     } catch (error) {
-        res.status(500).json({ errormssg: "Something went wrong" + error })
+        res.status(500).json({success:false, error: "Something went wrong" + error })
     }
 });
 
@@ -80,20 +80,20 @@ router.post('/login', [
     const result = validationResult(req);
     if(!result)
     {
-        return res.send({error:result.array()})
+        return res.send({success:false,error:result.array()})
     }
 
     try {
         const user = await Users.findOne({email})
         if(!user)
         {
-            return res.send({error:"Incorrect Credentials"})    
+            return res.send({success:false,error:"Incorrect Credentials"})    
         }
         
         const passcmp = await bcrypt.compare(pass,user.pass)
         if(!passcmp)
         {
-            return res.send({error:"Incorrect Credentials"})    
+            return res.send({success:false,error:"Incorrect Credentials"})    
         }
 
         const data = {
@@ -104,12 +104,12 @@ router.post('/login', [
         //generatin the authentication token 
         const authtoken = jwt.sign(data, JWT_SIGN);
         // console.log(authtoken)
-        res.json({ authtoken })
+        res.json({success:true, authtoken })
 
 
     } catch (error) {
         console.log(error.message)
-        res.status(500).send("Internal Server Error")
+        return res.send({success:false,error:"Internal Server Error"}) 
     }
 
 });
