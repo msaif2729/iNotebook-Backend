@@ -10,7 +10,7 @@ const app = express()
 const port = 5000
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'https://inotebook-frontend-ruby.vercel.app'], // Allow multiple origins
+    origin: ['http://localhost:3000', 'https://inotebook-msaif2729.vercel.app/'], // Allow multiple origins
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
 }));
