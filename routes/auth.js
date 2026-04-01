@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken')
 const { query, body, validationResult } = require('express-validator');
 const fetchuser = require('../middleware/finduser');
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SIGN = process.env.JWT_SIGN;
 
 
 //Creating a new user
