@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken')
 
+const JWT_SECRET = process.env.JWT_SECRET || "saif2729"
 
 const fetchuser = (req,res,next)=>{
 
     const token = req.header('auth-token');
-    const JWT_SIGN = "saif2729"
     
     if(!token)
     {
@@ -13,7 +13,7 @@ const fetchuser = (req,res,next)=>{
 
     try {
         
-        const data = jwt.verify(token,JWT_SIGN)
+        const data = jwt.verify(token, JWT_SECRET)
         req.user=data.user
         next()
 

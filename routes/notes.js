@@ -9,14 +9,17 @@ const fetchuser = require('../middleware/finduser');
 
 
 router.post('/createnote', fetchuser, [
-    body("title", "Enter the Title").isEmpty(),
-    body("desc", "Enter the desc").isEmpty()
+    body("title", "Enter the Title").notEmpty(),
+    body("desc", "Enter the desc").notEmpty()
 
-], async (req, res) => {
+], async (req, res, next) => {
 
     const result = validationResult(req);
-    if (!result) {
-        return res.status(500).send({ error: "Something went wrong" })
+    if (!result.isEmpty()) {
+        const error = new Error("Validation failed");
+        error.status = 400;
+        error.errors = result.array();
+        return next(error);
     }
 
     try {
@@ -29,13 +32,13 @@ router.post('/createnote', fetchuser, [
 
     } catch (error) {
         console.log(error)
-        res.status(500).send({ error: "Internal Error" })
+        return next(error);
     }
 
 });
 
 
-router.get('/getall', fetchuser, async (req, res) => {
+router.get('/getall', fetchuser, async (req, res, next) => {
     try {
 
         const notes = await Notes.find({ user: req.user.id })
@@ -43,12 +46,12 @@ router.get('/getall', fetchuser, async (req, res) => {
 
     } catch (error) {
         console.log(error)
-        res.status(500).send({ error: "Internal Error" })
+        return next(error);
     }
 
 });
 
-router.get('/getone/:id', fetchuser, async (req, res) => {
+router.get('/getone/:id', fetchuser, async (req, res, next) => {
     try {
 
         const notes = await Notes.findOne({ _id:req.params.id,user: req.user.id })
@@ -56,23 +59,27 @@ router.get('/getone/:id', fetchuser, async (req, res) => {
 
     } catch (error) {
         console.log(error)
-        res.status(500).send({ error: "Internal Error" })
+        return next(error);
     }
 
 });
 
-router.delete('/deletenote/:id', fetchuser, async (req, res) => {
+router.delete('/deletenote/:id', fetchuser, async (req, res, next) => {
     try {
         const user = await Notes.findOne({_id:req.params.id,user:req.user.id})
         if(!user)
         {
-            return res.send("Not a valid user")
+            const error = new Error("Not a valid user");
+            error.status = 401;
+            return next(error);
         }
         const del = await Notes.findByIdAndDelete(req.params.id)
-        console.log(user)
+        // console.log(user)
         if(!del)
         {
-            return res.status(401).send({error:"Note not deleted"})
+            const error = new Error("Note not deleted");
+            error.status = 401;
+            return next(error);
         }
         const notes = await Notes.find({user:req.user.id})
         // console.log(notes)
@@ -80,13 +87,13 @@ router.delete('/deletenote/:id', fetchuser, async (req, res) => {
 
     } catch (error) {
         console.log(error)
-        res.status(500).send({ error: "Internal Error" })
+        return next(error);
     }
 
 });
 
 
-router.put('/updatenote/:id', fetchuser, async (req, res) => {
+router.put('/updatenote/:id', fetchuser, async (req, res, next) => {
     try {
         const {title,desc,tag} = req.body;
 
@@ -97,19 +104,23 @@ router.put('/updatenote/:id', fetchuser, async (req, res) => {
         const user = await Notes.findOne({_id:req.params.id,user:req.user.id})
         if(!user)
         {
-            return res.status(401).send("Not a valid user")
+            const error = new Error("Not a valid user");
+            error.status = 401;
+            return next(error);
         }
-        console.log(user)
+        // console.log(user)
         const updatednote = await Notes.findByIdAndUpdate(req.params.id,notes,{new:true})
         if(!updatednote)
         {
-            return res.status(401).send({error:"Note not updated"})
+            const error = new Error("Note not updated");
+            error.status = 401;
+            return next(error);
         }
         res.json(updatednote)
 
     } catch (error) {
         console.log(error)
-        res.status(500).send({ error: "Internal Error" })
+        return next(error);
     }
 
 });

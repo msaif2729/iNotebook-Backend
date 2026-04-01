@@ -6,8 +6,7 @@ const jwt = require('jsonwebtoken')
 const { query, body, validationResult } = require('express-validator');
 const fetchuser = require('../middleware/finduser');
 
-
-const JWT_SIGN = "saif2729"
+const JWT_SECRET = process.env.JWT_SECRET;
 
 
 //Creating a new user
@@ -17,21 +16,25 @@ router.post('/createuser', [
     body('email', "Enter a valid Username").isEmail(),
     body('pass', "Enter a valid Password").isLength({ min: 5 }),
     body('pass', "Enter a valid Password").isLength({ max: 15 })
-], async (req, res) => {
+], async (req, res, next) => {
 
     try {
 
         //in the result we get the validated result
         const result = validationResult(req);
         if (!result.isEmpty()) {
-            return res.send({success:false, error: result.array() });
+            const error = new Error("Validation failed");
+            error.status = 400;
+            error.errors = result.array();
+            return next(error);
         }
 
 
         let user = await Users.findOne({ $or: [{ email: req.body.email }, { pass: req.body.pass }] });
         if (user) {
-            //Show Error mssg if the user with the details already exist
-            return res.status(400).json({success:false, error: "Sorry a user with this email/pass is already exists" })
+            const error = new Error("Sorry a user with this email/pass already exists");
+            error.status = 400;
+            return next(error);
         }
 
 
@@ -64,7 +67,7 @@ router.post('/createuser', [
 
 
     } catch (error) {
-        res.status(500).json({success:false, error: "Something went wrong" + error })
+        return next(error);
     }
 });
 
@@ -73,27 +76,33 @@ router.post('/login', [
     //Validation the inputs 
     body('email', "Enter a valid Username").isEmail(),
     body('pass', "Enter a valid Password").exists()
-], async (req, res) => {
+], async (req, res, next) => {
 
     const {email,pass} = req.body;
 
     const result = validationResult(req);
-    if(!result)
-    {
-        return res.send({success:false,error:result.array()})
+    if (!result.isEmpty()) {
+        const error = new Error("Validation failed");
+        error.status = 400;
+        error.errors = result.array();
+        return next(error);
     }
 
     try {
         const user = await Users.findOne({email})
         if(!user)
         {
-            return res.send({success:false,error:"Incorrect Credentials"})    
+            const error = new Error("Incorrect Credentials");
+            error.status = 401;
+            return next(error);
         }
         
         const passcmp = await bcrypt.compare(pass,user.pass)
         if(!passcmp)
         {
-            return res.send({success:false,error:"Incorrect Credentials"})    
+            const error = new Error("Incorrect Credentials");
+            error.status = 401;
+            return next(error);
         }
 
         const data = {
@@ -109,14 +118,14 @@ router.post('/login', [
 
     } catch (error) {
         console.log(error.message)
-        return res.send({success:false,error:"Internal Server Error"}) 
+        return next(error);
     }
 
 });
 
 
 
-router.post("/getuser",fetchuser,async (req,res)=>{
+router.post("/getuser",fetchuser,async (req,res,next)=>{
 
     try {
         const userID = req.user.id;
@@ -126,7 +135,7 @@ router.post("/getuser",fetchuser,async (req,res)=>{
 
     } catch (error) {
         console.log({error})
-        res.status(500).send({error:"Internal Error"})
+        return next(error);
         
     }
 
